@@ -33,13 +33,14 @@ def _discover_dataset_configs(base_dir: str) -> dict[str, dict[str, str]]:
 
 def create_app(test_config=None):
     app = Flask(__name__)
-    backend_dir = os.path.dirname(os.path.dirname(__file__))
+    root_dir = os.path.dirname(os.path.dirname(__file__))
+    data_dir = os.path.join(root_dir, "data")
 
     # Set default config
     app.config.from_mapping(
         SECRET_KEY='dev',
-        DATABASE=os.path.join(backend_dir, "database.db"),
-        IMAGE_UPLOAD_FOLDER=os.path.join(backend_dir, "uploaded_images"),
+        DATABASE=os.path.join(data_dir, "butterflies", "database.db"),
+        IMAGE_UPLOAD_FOLDER=os.path.join(data_dir, "butterflies", "uploaded_images"),
         DATASET_CONFIGS={},
         DEFAULT_DATASET=None,
     )
@@ -53,7 +54,7 @@ def create_app(test_config=None):
         if test_config is not None and "DATABASE" in test_config:
             app.config["DATASET_CONFIGS"] = {}
         else:
-            app.config["DATASET_CONFIGS"] = _discover_dataset_configs(backend_dir)
+            app.config["DATASET_CONFIGS"] = _discover_dataset_configs(data_dir)
 
     if app.config["DATASET_CONFIGS"] and not app.config.get("DEFAULT_DATASET"):
         if "butterflies" in app.config["DATASET_CONFIGS"]:
