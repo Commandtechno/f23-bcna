@@ -3,9 +3,9 @@ from flask_cors import CORS
 from app.routes.wildlife import wildlife_bp
 from app.routes.categories import categories_bp
 from app.routes.images import images_bp
+from app.routes.auth import auth_bp
 
 import os
-
 
 def _normalize_dataset_name(name: str) -> str:
     return name.strip().lower().replace(" ", "_")
@@ -63,7 +63,7 @@ def create_app(test_config=None):
             app.config["DEFAULT_DATASET"] = sorted(app.config["DATASET_CONFIGS"].keys())[0]
 
     # Enable CORS for frontend
-    CORS(app, origins=["http://localhost:3000"])
+    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"], supports_credentials=True)
     print("[CORS DEBUG] CORS enabled for all routes.")
 
     @app.before_request
@@ -90,5 +90,6 @@ def create_app(test_config=None):
     app.register_blueprint(wildlife_bp)
     app.register_blueprint(categories_bp)
     app.register_blueprint(images_bp)
+    app.register_blueprint(auth_bp)  
 
     return app
