@@ -63,7 +63,7 @@ def create_app(test_config=None):
             app.config["DEFAULT_DATASET"] = sorted(app.config["DATASET_CONFIGS"].keys())[0]
 
     # Enable CORS for frontend
-    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000"], supports_credentials=True)
+    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000", "https://trends-parade-poker-techniques.trycloudflare.com"], supports_credentials=True)
     print("[CORS DEBUG] CORS enabled for all routes.")
 
     @app.before_request
