@@ -7,6 +7,7 @@ from app.routes.auth import auth_bp
 
 import os
 
+
 def _normalize_dataset_name(name: str) -> str:
     return name.strip().lower().replace(" ", "_")
 
@@ -38,7 +39,7 @@ def create_app(test_config=None):
 
     # Set default config
     app.config.from_mapping(
-        SECRET_KEY='dev',
+        SECRET_KEY="dev",
         DATABASE=os.path.join(data_dir, "butterflies", "database.db"),
         IMAGE_UPLOAD_FOLDER=os.path.join(data_dir, "butterflies", "uploaded_images"),
         DATASET_CONFIGS={},
@@ -60,10 +61,20 @@ def create_app(test_config=None):
         if "butterflies" in app.config["DATASET_CONFIGS"]:
             app.config["DEFAULT_DATASET"] = "butterflies"
         else:
-            app.config["DEFAULT_DATASET"] = sorted(app.config["DATASET_CONFIGS"].keys())[0]
+            app.config["DEFAULT_DATASET"] = sorted(
+                app.config["DATASET_CONFIGS"].keys()
+            )[0]
 
     # Enable CORS for frontend
-    CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000", "https://trends-parade-poker-techniques.trycloudflare.com"], supports_credentials=True)
+    CORS(
+        app,
+        origins=[
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+            os.getenv("FRONTEND_URL"),
+        ],
+        supports_credentials=True,
+    )
     print("[CORS DEBUG] CORS enabled for all routes.")
 
     @app.before_request
@@ -73,23 +84,35 @@ def create_app(test_config=None):
             return None
         dataset_key = _normalize_dataset_name(dataset)
         if dataset_key not in app.config["DATASET_CONFIGS"]:
-            return jsonify({
-                "error": f"Unknown dataset '{dataset}'",
-                "available_datasets": sorted(app.config["DATASET_CONFIGS"].keys()),
-            }), 400
+            return (
+                jsonify(
+                    {
+                        "error": f"Unknown dataset '{dataset}'",
+                        "available_datasets": sorted(
+                            app.config["DATASET_CONFIGS"].keys()
+                        ),
+                    }
+                ),
+                400,
+            )
         return None
 
     @app.get("/api/datasets/")
     def get_datasets():
-        return jsonify({
-            "default_dataset": app.config.get("DEFAULT_DATASET"),
-            "datasets": sorted(app.config["DATASET_CONFIGS"].keys()),
-        }), 200
+        return (
+            jsonify(
+                {
+                    "default_dataset": app.config.get("DEFAULT_DATASET"),
+                    "datasets": sorted(app.config["DATASET_CONFIGS"].keys()),
+                }
+            ),
+            200,
+        )
 
     # Register blueprints
     app.register_blueprint(wildlife_bp)
     app.register_blueprint(categories_bp)
     app.register_blueprint(images_bp)
-    app.register_blueprint(auth_bp)  
+    app.register_blueprint(auth_bp)
 
     return app
